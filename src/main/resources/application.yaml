@@ -1,3 +1,11 @@
 spring:
   application:
     name: kanban
+  datasource:
+    url: jdbc:postgresql://localhost:5432/api-kanban
+    username: liron
+    password: ""
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
