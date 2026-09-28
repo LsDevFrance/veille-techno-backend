@@ -9,3 +9,8 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+
+app:
+  jwt:
+    secret: kanban-dev-jwt-secret-change-me-32b
+    expiration: 1h

@@ -1,64 +1,51 @@
 package com.example.kanban.controller;
 
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.kanban.dto.AuthResponse;
+import com.example.kanban.dto.LoginRequest;
+import com.example.kanban.dto.RegisterRequest;
+import com.example.kanban.dto.UserResponse;
+import com.example.kanban.service.UserService;
+
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/user")
+@Tag(name = "Auth", description = "Inscription et connexion")
 public class UserController {
 
-    @PostMapping("/createWithList")
-    @Operation(summary = "Create list of users with given input array", description = "Create a user with an array of users")
-    public String createUserWithList() {
-        return "User created with list";
+    private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
     }
 
-    @GetMapping("/{username}")
-    @Operation(summary = "Get user by username", description = "Get a user by username")
-    public String getUser(@PathVariable String username) {
-        return "User " + username;
+    @PostMapping("/api/auth/register")
+    @Operation(summary = "Inscrire un nouvel utilisateur")
+    @ApiResponse(responseCode = "201", description = "Utilisateur créé",
+            content = @Content(schema = @Schema(implementation = UserResponse.class)))
+    @ApiResponse(responseCode = "400", description = "Email invalide ou mot de passe trop court")
+    @ApiResponse(responseCode = "409", description = "Email déjà utilisé")
+    public ResponseEntity<UserResponse> register(@Valid @RequestBody RegisterRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(userService.register(request));
     }
 
-    @PutMapping("/{username}")
-    @Operation(summary = "Update user", description = "Update a user by username")
-    public String updateUser(@PathVariable String username) {
-        return "User " + username + " updated";
-    }
-
-    @DeleteMapping("/{username}")
-    @Operation(summary = "Delete user", description = "Delete a user by username")
-    public String deleteUser(@PathVariable String username) {
-        return "User " + username + " deleted";
-    }
-
-    @GetMapping("/login")
-    @Operation(summary = "Logs user into the system", description = "Login a user")
-    public String login() {
-        return "User logged in";
-    }
-
-    @GetMapping("/logout")
-    @Operation(summary = "Logs out current logged in user session", description = "Logout a user")
-    public String logout() {
-        return "User logged out";
-    }
-
-     @PostMapping("/createWithArray")
-    @Operation(summary = "Create list of users with given input array", description = "Create a user with an array of users")
-    public String createUserWithArray() {
-        return "User created with name:";
-    }
-
-    @PostMapping
-    @Operation(summary = "Create user", description = "Create a user")
-    public String createUser() {
-        return "User created";
+    @PostMapping("/api/auth/login")
+    @Operation(summary = "Connecter un utilisateur")
+    @ApiResponse(responseCode = "200", description = "Connexion réussie",
+            content = @Content(schema = @Schema(implementation = AuthResponse.class)))
+    @ApiResponse(responseCode = "400", description = "Email invalide ou mot de passe manquant")
+    @ApiResponse(responseCode = "401", description = "Identifiants invalides")
+    public AuthResponse login(@Valid @RequestBody LoginRequest request) {
+        return userService.login(request);
     }
 }
